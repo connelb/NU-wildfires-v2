@@ -116,8 +116,8 @@ def fire_causes_data():
         group_by(Fires.STAT_CAUSE_DESCR).all()
 
     cause = [result[0] for result in results]
-    count = [(result[1]) for result in results]
-    states = [(result[2]) for result in results]
+    count = [result[1] for result in results]
+    states = [result[2] for result in results]
 
     # Generate the plot trace
     plot_trace = {

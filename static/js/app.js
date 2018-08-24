@@ -211,7 +211,7 @@ function init() {
         .property("value", state);
     });
 
-    //buildChloropleth(data);
+    buildChloropleth(data);
     initPlotly();
   })
 }
@@ -224,15 +224,31 @@ function optionChanged(value) {
 }
 
 function optionChanged2(value) {
+var newData ={};
+  var filteredState = [];
+  var filteredX = [];
+  var filteredY = [];
+  var myStates = this.plotlyData[0].state;
+  for (i = 0; i < myStates.length; i++) {
+    if (myStates[i] === value){
+      filteredState.push(this.plotlyData[0].state[i]);
+      filteredX.push(this.plotlyData[0].x[i]);
+      filteredY.push(this.plotlyData[0].y[i]);
+    }
+  }
 
-  console.log('this.plotlyData',this.plotlyData[0]);
+  newData={
+    'state':filteredState,
+    'type': "bar",
+    'x':filteredX,
+    'y':filteredY
+  }
 
-  let temp = this.plotlyData[0].filter(row => row['state'] == value);
-  //console.log('temp1',temp)
-  if (temp) {
-    updatePlotly(temp);
+  if (newData) {
+    updatePlotly(newData);
   }
 }
+
 
 function initPlotly() {
   var selector = d3.select("#selDataset1");
@@ -241,18 +257,8 @@ function initPlotly() {
   //d3.json(defaultURL).then(function (data) {
   d3.json(defaultURL, function (error, data) {
 
-    //d3.json(defaultURL).then(data=> {
-
-    //console.log('data, has states???',data);
-
-    //this.masterData = data;
-    //states = d3.map(data, function (d) { return d.State; }).keys().sort();
-
-    states = d3.map(data['state'], function (d) { return d; }).keys().sort();
-    //.forEach(datum=> { return datum; }).keys().sort();
-    //console.log('kkk',states)
-
-    //Object { state: Array[13], type: "bar", x: Array[13], y: Array[13] }
+//Set up dropdown using unique states
+    var states = d3.map(data['state'], function (d) { return d; }).keys().sort();
     states.forEach(state => {
       selector
         .append("option")
@@ -264,28 +270,16 @@ function initPlotly() {
     var layout = { margin: { t: 30, b: 100 } };
     Plotly.newPlot("bar", this.plotlyData, layout);
   });
-
-  // // Update the plot with new data
-  // function updatePlotly(newdata) {
-  //   Plotly.restyle("bar", "x", [newdata.x]);
-  //   Plotly.restyle("bar", "y", [newdata.y]);
-  // }
-
-  // // Get new data whenever the dropdown selection changes
-  // function getData(route) {
-  //   console.log(route);
-  //   d3.json(`/${route}`).then(function (data) {
-  //     console.log("newdata", data);
-  //     updatePlotly(data);
-  //   });
-  //}
-
 }
 
 // Update the plot with new data
 function updatePlotly(newdata) {
+  console.log('what is filtered data?', newdata)
+
   Plotly.restyle("bar", "x", [newdata.x]);
   Plotly.restyle("bar", "y", [newdata.y]);
+  //var layout = { margin: { t: 30, b: 100 } };
+  //Plotly.restyle("bar", this.plotlyData);
 }
 
 function stateId(value) {
