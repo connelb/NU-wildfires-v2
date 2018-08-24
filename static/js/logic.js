@@ -1,5 +1,5 @@
 // selector
-var selector = d3.select("#selYear");
+var selector = d3.select("#selDataset");
 
 
 d3.json('/firedata', function (error, data) {
@@ -28,7 +28,7 @@ function optionChanged(value) {
     }
   }
 
-  
+
   function redrawLeaflet(temp){
 
   }
