@@ -2,6 +2,7 @@
 var masterData = [];
 var statesData = [];
 var mapData = [];
+var plotlyData = [];
 
 
 function buildMetadata(sample) {
@@ -46,7 +47,7 @@ function buildChloropleth(data) {
   //https://gist.github.com/mbostock/4090846#file-us-state-names-tsv
   //https://gist.github.com/4090846#file-us-county-names-tsv
 
-  var svg = d3.select("svg"),
+  var svg = d3.select("#cloropleth"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
@@ -59,7 +60,8 @@ function buildChloropleth(data) {
     .rangeRound([600, 860]);
 
   var color = d3.scaleThreshold()
-    .domain(d3.range(2, 10))
+    .domain(d3.range(2, 10))//0, 1500
+    //.domain(d3.range(0, 1500))//0, 1500
     .range(d3.schemeReds[9]);
 
   var g = svg.append("g")
@@ -86,7 +88,7 @@ function buildChloropleth(data) {
     .attr("fill", "#000")
     .attr("text-anchor", "start")
     .attr("font-weight", "bold")
-    .text("Unemployment rate");
+    .text("Fire Size");
 
   g.call(d3.axisBottom(x)
     .tickSize(13)
@@ -192,24 +194,25 @@ function buildChloropleth(data) {
 
 
 function init() {
-  
+
   var selector = d3.select("#selDataset");
   // Use the list of sample names to populate the select options
   //d3.json('/firedata').then(data=> {
-  d3.json('/firedata', function (error, data) {
-    
-    this.masterData=data;
-    states = d3.map(data, function (d) {return d.State;}).keys().sort();
+  d3.json('/mapdata', function (error, data) {
+
+    this.masterData = data;
+    states = d3.map(data, function (d) { return d.State; }).keys().sort();
 
     //states.forEach(function (error, state) {
-    states.forEach(state=> {
+    states.forEach(state => {
       selector
         .append("option")
         .text(state)
         .property("value", state);
     });
 
-    buildChloropleth(data);
+    //buildChloropleth(data);
+    initPlotly();
   })
 }
 
@@ -220,11 +223,69 @@ function optionChanged(value) {
   }
 }
 
-function updatePlotly(data) {
-  console.log('here is the filtered data', data)
+function optionChanged2(value) {
 
-  //place the plotly code here
+  console.log('this.plotlyData',this.plotlyData[0]);
 
+  let temp = this.plotlyData[0].filter(row => row['state'] == value);
+  //console.log('temp1',temp)
+  if (temp) {
+    updatePlotly(temp);
+  }
+}
+
+function initPlotly() {
+  var selector = d3.select("#selDataset1");
+  // Plot the default route once the page loads
+  const defaultURL = "/fire_causes";
+  //d3.json(defaultURL).then(function (data) {
+  d3.json(defaultURL, function (error, data) {
+
+    //d3.json(defaultURL).then(data=> {
+
+    //console.log('data, has states???',data);
+
+    //this.masterData = data;
+    //states = d3.map(data, function (d) { return d.State; }).keys().sort();
+
+    states = d3.map(data['state'], function (d) { return d; }).keys().sort();
+    //.forEach(datum=> { return datum; }).keys().sort();
+    //console.log('kkk',states)
+
+    //Object { state: Array[13], type: "bar", x: Array[13], y: Array[13] }
+    states.forEach(state => {
+      selector
+        .append("option")
+        .text(state)
+        .property("value", state);
+    });
+
+    this.plotlyData = [data];
+    var layout = { margin: { t: 30, b: 100 } };
+    Plotly.newPlot("bar", this.plotlyData, layout);
+  });
+
+  // // Update the plot with new data
+  // function updatePlotly(newdata) {
+  //   Plotly.restyle("bar", "x", [newdata.x]);
+  //   Plotly.restyle("bar", "y", [newdata.y]);
+  // }
+
+  // // Get new data whenever the dropdown selection changes
+  // function getData(route) {
+  //   console.log(route);
+  //   d3.json(`/${route}`).then(function (data) {
+  //     console.log("newdata", data);
+  //     updatePlotly(data);
+  //   });
+  //}
+
+}
+
+// Update the plot with new data
+function updatePlotly(newdata) {
+  Plotly.restyle("bar", "x", [newdata.x]);
+  Plotly.restyle("bar", "y", [newdata.y]);
 }
 
 function stateId(value) {
