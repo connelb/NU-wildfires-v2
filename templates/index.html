@@ -8,20 +8,61 @@
   <title>Wild Fires</title>
  
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="{{ url_for( 'static', filename='css/style.css' ) }}">
 </head>
 
 <body>
+
+    <div class="container">
+        <div style=background-image:url( 'static/images/wildfire.png')></div>
+        <div class="col-md-12 jumbotron text-center">
+            <h1><strong>1.88 Million US Wildfires</strong></h1>
+            <pic></pic>
+            <p>24 years of geo-referenced wildfire records</p>
+        </div>
+    </div>
+    <!-- <div class="container">
+        <div class="jumbotron">
+          <h1 class="header" style="color: #FFF; font-weight: normal; text-shadow: #000 2px 2px 3px;">Mission to Mars</h1>
+          <p class="button-p"><a class="btn btn-primary btn-lg button-text" href="/scrape" role="button">Scrape New Data</a></p>
+        </div> -->
+
+    </div>
+    <div class="container">
+        <h5><strong>SELECT Sample:</strong></h5>
+        <select id="selDataset" onchange="optionChanged(this.value)"></select>
+    </div>
+    <br>
+    <br>
+    <div class="landscape">
+
+        <div class="container">
+            <h4 class="card-header header"><strong>Wildfires occurring from 1992 to 2015</strong></h4>
+            <!--img style='height: 60%; width: 60%; object-fit: contain' src="Firechart1.jpg" alt="(lighter color means more wildfires)"-->
+            <img src="/static/images/Firechart1.jpg" style='height: 60%; width: 60%; object-fit: contain'>
+        </div>
+    </div>
+
+
+
+    <br>
+
+    <h4 class="container"><strong>Circles correspond to Fire Size, please Zoom to see greater detail</strong></h4>
+
+    <div class="landscape"></div>
+    <div id="map" style='height: 90%; width: 80%; object-fit: center'></div>
 
 
   
 
   <div class="container">
     <div class="row">
-        <!-- <svg width="960" height="600"></svg> -->
+        <br>
+        <hr>
       <div class="col-md-2">
         <div class="well">
-          <h5>SELECT Sample:</h5>
-          <select id="selDataset1" onchange="optionChanged2(this.value)"></select>
+          <h5>States:</h5>
+          <select id="plotly" onchange="plotlyStateChanged(this.value)"></select>
         </div>
       </div>
       <div class="col-md-10">
@@ -29,12 +70,13 @@
       </div>
     </div>
   </div>
-  <div class="row"></div>
   <div class="row">
+    <br>
+    <hr>
       <div class="col-md-2">
           <div class="well">
-            <h5>SELECT Sample:</h5>
-            <select id="selDataset" onchange="optionChanged(this.value)"></select>
+            <h5>Year:</h5>
+            <select id="selYear" onchange="cloroplethChanged(this.value)"></select>
           </div>
         </div>
     <div class="col-md-10">
