@@ -4,21 +4,54 @@ var statesData = [];
 var mapData = [];
 var plotlyData = [];
 
+var attributeArray = [], currentAttribute = 0, playing
+
 
 
 
 function init() {
-  buildChloropleth();
+  //loads map data
+  d3.json('/mapdata', function (error, data) {
+  buildChloropleth(data);
+  animateMap();
+})
   initPlotly();
 }
 
+
+function animateMap() {
+
+  var timer;  // create timer object
+  d3.select('#play')  
+    .on('click', function() {  // when user clicks the play button
+      if(playing == false) {  // if the map is currently playing
+        timer = setInterval(function(){   // set a JS interval
+          if(currentAttribute < attributeArray.length-1) {  
+              currentAttribute +=1;  // increment the current attribute counter
+          } else {
+              currentAttribute = 0;  // or reset it to zero
+          }
+          cloroplethChanged(attributeArray[currentAttribute]);  // update the representation of the map 
+          d3.select('#clock').html(attributeArray[currentAttribute]);  // update the clock
+        }, 2000);
+      
+        d3.select(this).html('stop');  // change the button label to stop
+        playing = true;   // change the status of the animation
+      } else {    // else if is currently playing
+        clearInterval(timer);   // stop the animation by clearing the interval
+        d3.select(this).html('play');   // change the button label to play
+        playing = false;   // change the status again
+      }
+  });
+}
+
+
 function cloroplethChanged(value) {
-  let temp = masterData.filter(row => row.Year === value);
-  if (temp) {
-    //to do change year and replot cloropleth
-    // currently filtering only to 2013 'cos it is too big :(
-    //buildChloropleth(temp);
-  }
+  let temp = this.masterData.filter(row => row.Year == value);
+  console.log('cloroplethChanged(value)', value, temp)
+  //if (temp) {
+    updateChloropleth(temp);
+  //}
 }
 
 function plotlyStateChanged(value) {
@@ -95,16 +128,57 @@ function stateId(value) {
   return temp
 }
 
+// used in cloropleth to define color
+function mySize(value) {
+  var temp = 0;
 
-function buildChloropleth() {
+  this.masterData.find(datum => {
+    if (datum.FIPS == value) {
+      temp = +datum.Size;
+    }
+  })
+  //console.log('mySize: value, looked up size is: ',value, temp)
+  return temp | 0;
+}
+
+function updateChloropleth(data){
+
+  function mySize(value) {
+    var temp = 0;
+  
+    data.find(datum => {
+      if (datum.FIPS == value) {
+        temp = +datum.Size;
+      }
+    })
+    return temp | 0;
+  }
+
+  var color = d3.scaleThreshold()
+  .domain(d3.range(0.01, 50))//0, 1500
+  //.domain(d3.range(0, 1500))//0, 1500
+  //.range(d3.schemeReds[9]);
+  .range(d3.schemeReds[9]);
+  //console.log('color(2)',color(2));
+//reset
+  d3.select("#cloropleth").selectAll('.counties path').attr("fill",'#FFFFFF')
+
+//redraw
+  d3.select("#cloropleth").selectAll('.counties path')
+  .data(topojson.feature(this.mapData, this.mapData.objects.counties).features)
+  .attr("fill", function (d) { return color(d.rate = (d['id']) ? mySize(d['id']) : 0) })
+}
+
+function buildChloropleth(data) {
   var selector = d3.select("#selYear");
 
-
-  d3.json('/mapdata', function (error, data) {
+  d3.select('#clock').html(attributeArray[currentAttribute]);  // populate the clock initially
 
     this.masterData = data;
     // Use the list of years to populate the select options
-    years = d3.map(data, function (d) { return d.Year; }).keys().sort();
+    years = d3.map(data, function (d) { return d.Year; }).keys().sort(function(a, b){return a-b});
+
+    this.attributeArray = years;
 
     years.forEach(year => {
       selector
@@ -128,12 +202,12 @@ function buildChloropleth() {
       width = +svg.attr("width"),
       height = +svg.attr("height");
 
-    var unemployment = d3.map();//get rid of?
+    //var unemployment = d3.map();//get rid of?
 
     var path = d3.geoPath();
 
     var x = d3.scaleLinear()
-      .domain([0, 1500])
+      .domain([0, 10])
       .rangeRound([600, 860]);
 
     var color = d3.scaleThreshold()
@@ -169,12 +243,14 @@ function buildChloropleth() {
 
     g.call(d3.axisBottom(x)
       .tickSize(13)
-      .tickFormat(function (x, i) { return i ? x : x + "%"; })
+      .tickFormat(function (x, i) { return i ? x : x + ""; })
       .tickValues(color.domain()))
       .select(".domain")
       .remove();
 
     d3.json('/us', function (error, us) {
+
+      this.mapData = us;
 
       data.forEach(datum => {
         datum['FIPS'] = ('0' + stateId(datum.State)).slice(-2) + datum.FIPS;
@@ -182,16 +258,7 @@ function buildChloropleth() {
 
       //console.log('max',d3.max(data, function(d){return d.Size}), 'min',d3.min(data, function(d){return d.Size}));
 
-      function mySize(value) {
-        var temp = 0;
 
-        data.find(datum => {
-          if (datum.FIPS == value) {
-            temp = +datum.Size;
-          }
-        })
-        return temp | 0;
-      }
 
 
       svg.append("g")
@@ -202,7 +269,7 @@ function buildChloropleth() {
         .attr("fill", function (d) { return color(d.rate = (d['id']) ? mySize(d['id']) : 0) })
         .attr("d", path)
         .append("title")
-        .text(function (d) { return d.rate + "%"; });
+        .text(function (d) { return d.rate + ""; });
 
 
       svg.append("path")
@@ -211,7 +278,7 @@ function buildChloropleth() {
         .attr("d", path);
 
     })
-  })
+  
 }
 
 

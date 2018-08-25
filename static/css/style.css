@@ -33,3 +33,13 @@ body {
     stroke-linecap: round;
     pointer-events: none;
   }
+
+  #play, #clock {
+    top: 15px;
+  }
+  #play {
+    left: 45px;
+  }
+  #clock {
+    left: 65px;
+  }

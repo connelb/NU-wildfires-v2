@@ -74,19 +74,26 @@ def home():
 
 @app.route("/mapdata")
 def mapdata():
-    results = db.session.query(Fires.LATITUDE, Fires.LONGITUDE, Fires.FIRE_YEAR, Fires.STAT_CAUSE_CODE, Fires.STATE,
-                               Fires.FIRE_SIZE, Fires.FIRE_SIZE_CLASS, Fires.FIPS_CODE).filter(Fires.FIRE_YEAR == 2013).all()
+    # results = db.session.query(Fires.LATITUDE, Fires.LONGITUDE, Fires.FIRE_YEAR, Fires.STAT_CAUSE_CODE, Fires.STATE,
+    #                            Fires.FIRE_SIZE, Fires.FIRE_SIZE_CLASS, Fires.FIPS_CODE).all() #.filter(Fires.FIRE_YEAR == 2013)
+    results = db.session.query(Fires.FIRE_YEAR, Fires.STATE, Fires.FIRE_SIZE, Fires.FIPS_CODE).limit(10000).all()
     firedata = []
     for result in results:
+        # firedata.append({
+        #     # "LAT": result[0],
+        #     # "LON": result[1],
+        #     "Year": result[2],
+        #     # "Cause": result[3],
+        #     "State": result[4],
+        #     "Size": result[5],
+        #     # "class": result[6],
+        #     "FIPS": result[7]
+        # })
         firedata.append({
-            "LAT": result[0],
-            "LON": result[1],
-            "Year": result[2],
-            "Cause": result[3],
-            "State": result[4],
-            "Size": result[5],
-            "class": result[6],
-            "FIPS": result[7]
+            "Year": result[0],
+            "State": result[1],
+            "Size": result[2],
+            "FIPS": result[3]
         })
     return jsonify(firedata)
 
